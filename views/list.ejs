@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ToDo List</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>ToDo List</h1>
+  </header>
+
+  <main class="box">
+    <!-- Alert Box -->
+    <% if (typeof alert !== "undefined") { %>
+      <div class="alert <%= alert %>">
+        <% if (alert === "added") { %>✅ Task added successfully.
+        <% } else if (alert === "updated") { %>✏️ Task updated.
+        <% } else if (alert === "deleted") { %>🗑️ Task deleted.
+        <% } else if (alert === "empty") { %>⚠️ Task cannot be empty.
+        <% } %>
+        <button onclick="this.parentElement.style.display='none'">X</button>
+      </div>
+    <% } %>
+
+    <!-- Filter Form -->
+    <form method="GET" action="/" class="filter-form">
+      <select name="priority" onchange="this.form.submit()">
+        <option value="">All Priorities</option>
+        <option value="Urgent" <%= priority === 'Urgent' ? 'selected' : '' %>>Urgent</option>
+        <option value="High" <%= priority === 'High' ? 'selected' : '' %>>High</option>
+        <option value="Low" <%= priority === 'Low' ? 'selected' : '' %>>Low</option>
+      </select>
+    </form>
+
+    <!-- Add Task Form -->
+    <form action="/add" method="POST" class="task-form">
+      <input type="text" name="task" placeholder="Enter a task..." required />
+      <select name="priority" required>
+        <option value="">Priority</option>
+        <option>Urgent</option>
+        <option>High</option>
+        <option>Low</option>
+      </select>
+      <button type="submit">+</button>
+    </form>
+
+    <!-- Task List -->
+    <% todos.forEach(todo => { %>
+      <div class="item">
+        <form action="/delete" method="POST">
+          <input type="hidden" name="id" value="<%= todo._id %>">
+          <button type="submit" class="delete-btn">X</button>
+        </form>
+
+        <form action="/edit" method="POST" class="edit-form">
+          <input type="hidden" name="id" value="<%= todo._id %>">
+          <input type="text" name="newTask" value="<%= todo.task %>" />
+          <button type="submit">O</button>
+        </form>
+
+        <span class="priority <%= todo.priority.toLowerCase() %>"><%= todo.priority %></span>
+      </div>
+    <% }) %>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 ToDo List App</p>
+  </footer>
+</body>
+</html>

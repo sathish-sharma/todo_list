@@ -1,0 +1,79 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: #f0f0f0;
+}
+header, footer {
+  background: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+.box {
+  background: white;
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 600px;
+  border-radius: 10px;
+}
+.task-form, .edit-form, .filter-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+input[type="text"] {
+  flex: 1;
+  padding: 8px;
+}
+button {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.priority {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
+.priority.high { background: #e74c3c; color: white; }
+.priority.urgent { background: #f1c40f; color: black; }
+.priority.low { background: #2ecc71; color: white; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 1em;
+  color: red;
+}
+.alert {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: white;
+  background-color: #444;
+  position: relative;
+}
+.alert.added { background-color: #27ae60; }
+.alert.updated { background-color: #2980b9; }
+.alert.deleted { background-color: #c0392b; }
+.alert.empty { background-color: #f39c12; }
+
+.alert button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  float: right;
+}
+
+@media (max-width: 600px) {
+  .task-form, .edit-form {
+    flex-direction: column;
+  }
+}
