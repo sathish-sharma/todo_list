@@ -12,25 +12,25 @@
   </header>
 
   <main class="box">
-    <!-- Alert Box -->
-    <% if (typeof alert !== "undefined") { %>
+
+    <!-- Alert Message -->
+    <% if (alert) { %>
       <div class="alert <%= alert %>">
-        <% if (alert === "added") { %>✅ Task added successfully.
-        <% } else if (alert === "updated") { %>✏️ Task updated.
-        <% } else if (alert === "deleted") { %>🗑️ Task deleted.
-        <% } else if (alert === "empty") { %>⚠️ Task cannot be empty.
-        <% } %>
+        <%= alert === "added" ? "Task added successfully." : 
+            alert === "updated" ? "Task updated." :
+            alert === "deleted" ? "Task deleted." :
+            alert === "empty" ? "Task cannot be empty." : "" %>
         <button onclick="this.parentElement.style.display='none'">X</button>
       </div>
     <% } %>
 
-    <!-- Filter Form -->
+    <!-- Filter Dropdown -->
     <form method="GET" action="/" class="filter-form">
       <select name="priority" onchange="this.form.submit()">
         <option value="">All Priorities</option>
-        <option value="Urgent" <%= priority === 'Urgent' ? 'selected' : '' %>>Urgent</option>
-        <option value="High" <%= priority === 'High' ? 'selected' : '' %>>High</option>
-        <option value="Low" <%= priority === 'Low' ? 'selected' : '' %>>Low</option>
+        <% ["Urgent", "High", "Low"].forEach(p => { %>
+          <option value="<%= p %>" <%= priority === p ? "selected" : "" %>><%= p %></option>
+        <% }) %>
       </select>
     </form>
 
@@ -39,9 +39,9 @@
       <input type="text" name="task" placeholder="Enter a task..." required />
       <select name="priority" required>
         <option value="">Priority</option>
-        <option>Urgent</option>
-        <option>High</option>
-        <option>Low</option>
+        <% ["Urgent", "High", "Low"].forEach(p => { %>
+          <option value="<%= p %>"><%= p %></option>
+        <% }) %>
       </select>
       <button type="submit">+</button>
     </form>
@@ -49,17 +49,20 @@
     <!-- Task List -->
     <% todos.forEach(todo => { %>
       <div class="item">
+        <!-- Delete Form -->
         <form action="/delete" method="POST">
           <input type="hidden" name="id" value="<%= todo._id %>">
           <button type="submit" class="delete-btn">X</button>
         </form>
 
+        <!-- Edit Form -->
         <form action="/edit" method="POST" class="edit-form">
           <input type="hidden" name="id" value="<%= todo._id %>">
           <input type="text" name="newTask" value="<%= todo.task %>" />
           <button type="submit">O</button>
         </form>
 
+        <!-- Priority Label -->
         <span class="priority <%= todo.priority.toLowerCase() %>"><%= todo.priority %></span>
       </div>
     <% }) %>
