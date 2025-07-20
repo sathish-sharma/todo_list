@@ -50,14 +50,14 @@
     <% todos.forEach(todo => { %>
       <div class="item">
         <!-- Delete Form -->
-        <form action="/delete" method="POST">
-          <input type="hidden" name="id" value="<%= todo._id %>">
+        <form action="/delete?_method=DELETE" method="POST">
+          <input type="hidden" name="id" value="<%= todo.id %>">
           <button type="submit" class="delete-btn">X</button>
         </form>
 
         <!-- Edit Form -->
-        <form action="/edit" method="POST" class="edit-form">
-          <input type="hidden" name="id" value="<%= todo._id %>">
+        <form action="/edit?_method=PUT" method="POST" class="edit-form">
+          <input type="hidden" name="id" value="<%= todo.id %>">
           <input type="text" name="newTask" value="<%= todo.task %>" />
           <button type="submit">O</button>
         </form>
