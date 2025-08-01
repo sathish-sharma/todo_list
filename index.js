@@ -1,89 +1,99 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const methodOverride = require("method-override");
-
 const app = express();
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static("public"));
-app.use(methodOverride("_method"));
 
 const MONGO_URI = "mongodb+srv://maruthisathish03:Mohana123@project1.v1qksi8.mongodb.net/?retryWrites=true&w=majority&appName=project1";
 
 const taskSchema = new mongoose.Schema({
-  task: String,
-  priority: {
-    type: String,
-    enum: ["Urgent", "High", "Low"],
-  },
+  task: String
 });
+
 const Task = mongoose.model("Task", taskSchema);
 
 const sampleTasks = [
-  { task: "Create Some Videos", priority: "High" },
-  { task: "Learn DSA", priority: "Urgent" },
-  { task: "Learn React", priority: "High" },
-  { task: "Take Some Risks", priority: "Low" },
+  { task: "Create Some Videos" },
+  { task: "Learn DSA" },
+  { task: "Learn React" },
+  { task: "Take Some Risks" }
 ];
 
 mongoose.connect(MONGO_URI)
-  .then(async () => {
+  .then(() => {
     console.log("Connected to MongoDB Atlas");
-    const count = await Task.countDocuments();
-    if (count === 0) {
-      await Task.insertMany(sampleTasks);
-      console.log("Sample tasks inserted.");
-    }
-
-    app.listen(3000, () => {
-      console.log("Server Started on 3000");
-    });
+    return Task.countDocuments();
   })
-  .catch((err) => {
+  .then(count => {
+    if (count === 0) {
+      return Task.insertMany(sampleTasks).then(() => {
+        console.log("Sample tasks inserted.");
+      });
+    }
+  })
+  .catch(err => {
     console.error("MongoDB connection error:", err);
   });
 
-// Routes
-app.get("/", async (req, res) => {
-  try {
-    const { priority, alert } = req.query;
-    const filter = priority ? { priority } : {};
-    const todos = await Task.find(filter);
-    res.render("list", { todos, priority, alert });
-  } catch (error) {
-    res.status(500).send("Error loading tasks.");
-  }
+
+app.get("/", (req, res) => {
+  Task.find()
+    .then(tasks => {
+      res.render("list", { ejes: tasks }); 
+    })
+    .catch(err => res.status(500).send("Error fetching tasks"));
 });
 
-app.post("/add", async (req, res) => {
-  const { task, priority } = req.body;
-  if (!task.trim()) return res.redirect("/?alert=empty");
 
+app.post("/", async (req, res) => {
+  const ele1 = req.body.ele1.trim();
+  if (!ele1) 
+    return res.status(400).json({ success: false, error: "Task cannot be empty" });
   try {
-    await Task.create({ task, priority });
-    res.redirect("/?alert=added");
-  } catch {
-    res.status(500).send("Error adding task.");
-  }
-});
-
-app.put("/edit", async (req, res) => {
-  const { id, newTask } = req.body;
-  if (!newTask.trim()) return res.redirect("/?alert=empty");
-
-  try {
-    await Task.findByIdAndUpdate(id, { task: newTask });
-    res.redirect("/?alert=updated");
-  } catch {
-    res.status(500).send("Error updating task.");
+    await Task.create({ task: ele1 });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.delete("/delete", async (req, res) => {
+  const taskToDelete = req.body.task;
   try {
-    await Task.findByIdAndDelete(req.body.id);
-    res.redirect("/?alert=deleted");
-  } catch {
-    res.status(500).send("Error deleting task.");
+    const result = await Task.deleteOne({ task: taskToDelete });
+    if (result.deletedCount > 0) {
+      res.status(200).json({ success: true });
+    } else {
+      res.status(404).json({ success: false, error: "Task not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
+});
+
+app.put("/edit", async (req, res) => {
+  const { oldTask, newTask } = req.body;
+  const trimmedNew = newTask.trim();
+  if (!trimmedNew)
+     return res.status(400).json({ success: false, error: "New task cannot be empty" });
+  try {
+    const result = await Task.findOneAndUpdate(
+      { task: oldTask },
+      { task: trimmedNew }
+    );
+    if (result) {
+      res.status(200).json({ success: true });
+    } else {
+      res.status(404).json({ success: false, error: "Task not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.listen(8000, () => {
+  console.log(`Server started on 8000`);
 });

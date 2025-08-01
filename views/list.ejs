@@ -2,74 +2,113 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ToDo List</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToDoList</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>ToDo List</h1>
-  </header>
+  <div id="heading" class="box">
+    <h1>ToDoList</h1>
+  </div>
 
-  <main class="box">
-
-    <!-- Alert Message -->
-    <% if (alert) { %>
-      <div class="alert <%= alert %>">
-        <%= alert === "added" ? "Task added successfully." : 
-            alert === "updated" ? "Task updated." :
-            alert === "deleted" ? "Task deleted." :
-            alert === "empty" ? "Task cannot be empty." : "" %>
-        <button onclick="this.parentElement.style.display='none'">X</button>
+  <div class="box">
+    <% for (var i = 0; i < ejes.length; i++) { %>
+      <div class="item" id="task-<%= i %>">
+        <input type="checkbox" onclick="deleteTask('<%= ejes[i].task %>')" />
+        <p class="task-text"><%= ejes[i].task %></p>
+        <input class="edit-input" type="text" value="<%= ejes[i].task %>" />
+        <button class="edit-btn" onclick="enableEdit('<%= i %>')">Edit</button>
+        <button class="save-btn" onclick="saveEdit('<%= i %>', '<%= ejes[i].task %>')">Save</button>
       </div>
     <% } %>
 
-    <!-- Filter Dropdown -->
-    <form method="GET" action="/" class="filter-form">
-      <select name="priority" onchange="this.form.submit()">
-        <option value="">All Priorities</option>
-        <% ["Urgent", "High", "Low"].forEach(p => { %>
-          <option value="<%= p %>" <%= priority === p ? "selected" : "" %>><%= p %></option>
-        <% }) %>
-      </select>
+    <form onsubmit="addTask(event)">
+      <input type="text" name="ele1" placeholder="Enter the task" required />
+      <button type="submit">Add</button>
     </form>
+  </div>
 
-    <!-- Add Task Form -->
-    <form action="/add" method="POST" class="task-form">
-      <input type="text" name="task" placeholder="Enter a task..." required />
-      <select name="priority" required>
-        <option value="">Priority</option>
-        <% ["Urgent", "High", "Low"].forEach(p => { %>
-          <option value="<%= p %>"><%= p %></option>
-        <% }) %>
-      </select>
-      <button type="submit">+</button>
-    </form>
+  <script>
+    function addTask(event) {
+      event.preventDefault();
+      const ele1 = document.querySelector('input[name=ele1]').value.trim();
+      if (!ele1) {
+        alert("Task cannot be empty.");
+        return;
+      }
+      fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ ele1 })
+      }).then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Task added successfully");
+          location.reload();
+        } else {
+          alert("Failed to add task");
+        }
+      });
+    }
 
-    <!-- Task List -->
-    <% todos.forEach(todo => { %>
-      <div class="item">
-        <!-- Delete Form -->
-        <form action="/delete?_method=DELETE" method="POST">
-          <input type="hidden" name="id" value="<%= todo.id %>">
-          <button type="submit" class="delete-btn">X</button>
-        </form>
+    function deleteTask(task) {
+      fetch("/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ task: task })
+      }).then(res => {
+        if (res.ok) {
+          alert("Task deleted successfully");
+          location.reload();
+        } else {
+          alert("Failed to delete task");
+        }
+      });
+    }
 
-        <!-- Edit Form -->
-        <form action="/edit?_method=PUT" method="POST" class="edit-form">
-          <input type="hidden" name="id" value="<%= todo.id %>">
-          <input type="text" name="newTask" value="<%= todo.task %>" />
-          <button type="submit">O</button>
-        </form>
+    function enableEdit(index) {
+      const container = document.getElementById(`task-${index}`);
+      const p = container.querySelector('.task-text');
+      const input = container.querySelector('.edit-input');
+      const editBtn = container.querySelector('.edit-btn');
+      const saveBtn = container.querySelector('.save-btn');
 
-        <!-- Priority Label -->
-        <span class="priority <%= todo.priority.toLowerCase() %>"><%= todo.priority %></span>
-      </div>
-    <% }) %>
-  </main>
+      p.style.display = 'none';
+      input.style.display = 'inline';
+      editBtn.style.display = 'none';
+      saveBtn.style.display = 'inline';
+    }
 
-  <footer>
-    <p>&copy; 2025 ToDo List App</p>
-  </footer>
+    function saveEdit(index, oldTask) {
+      const container = document.getElementById(`task-${index}`);
+      const input = container.querySelector('.edit-input');
+      const newTask = input.value.trim();
+      if (!newTask) {
+        alert("Task cannot be empty.");
+        return;
+      }
+
+      fetch('/edit', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ oldTask, newTask })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Task updated successfully");
+          location.reload();
+        } else {
+          alert("Failed to update task.");
+        }
+      });
+    }
+  </script>
 </body>
 </html>
