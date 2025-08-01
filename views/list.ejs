@@ -17,13 +17,24 @@
         <input type="checkbox" onclick="deleteTask('<%= ejes[i].task %>')" />
         <p class="task-text"><%= ejes[i].task %></p>
         <input class="edit-input" type="text" value="<%= ejes[i].task %>" />
+         <select class="edit-priority" style="display:none;">
+        <option value="Urgent" <%= ejes[i].priority === "Urgent" ? "selected" : "" %>>Urgent</option>
+        <option value="High" <%= ejes[i].priority === "High" ? "selected" : "" %>>High</option>
+        <option value="Low" <%= ejes[i].priority === "Low" ? "selected" : "" %>>Low</option>
+      </select>
+        <button class="priority-btn <%= ejes[i].priority.toLowerCase() %>"><%= ejes[i].priority %></button>
         <button class="edit-btn" onclick="enableEdit('<%= i %>')">Edit</button>
         <button class="save-btn" onclick="saveEdit('<%= i %>', '<%= ejes[i].task %>')">Save</button>
       </div>
     <% } %>
 
     <form onsubmit="addTask(event)">
-      <input type="text" name="ele1" placeholder="Enter the task" required />
+    <input type="text" name="ele1" placeholder="Enter the task" required />
+    <select name="priority" required>
+    <option value="Urgent">Urgent</option>
+    <option value="High">High</option>
+    <option value="Low">Low</option>
+     </select>
       <button type="submit">Add</button>
     </form>
   </div>
@@ -41,7 +52,7 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ ele1 })
+        body: JSON.stringify({ ele1 , priority: document.querySelector('select[name=priority]').value })
       }).then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -76,17 +87,35 @@
       const input = container.querySelector('.edit-input');
       const editBtn = container.querySelector('.edit-btn');
       const saveBtn = container.querySelector('.save-btn');
+      const priorityBtn = container.querySelector('.priority-btn');
+      const prioritySelect = container.querySelector('.edit-priority');
 
       p.style.display = 'none';
       input.style.display = 'inline';
       editBtn.style.display = 'none';
       saveBtn.style.display = 'inline';
+      prioritySelect.style.display = 'inline';
+      priorityBtn.style.display = 'none';
     }
 
     function saveEdit(index, oldTask) {
       const container = document.getElementById(`task-${index}`);
+      const p = container.querySelector('.task-text');
+      const editBtn = container.querySelector('.edit-btn');
       const input = container.querySelector('.edit-input');
       const newTask = input.value.trim();
+      const newPriority = container.querySelector('.edit-priority').value;
+      const saveBtn = container.querySelector('.save-btn');
+      const priorityBtn = container.querySelector('.priority-btn');
+      const prioritySelect = container.querySelector('.edit-priority');
+
+      p.style.display = 'inline';
+      input.style.display = 'none';
+      editBtn.style.display = 'inline';
+      saveBtn.style.display = 'none';
+      prioritySelect.style.display = 'none';
+      priorityBtn.style.display = 'inline';
+
       if (!newTask) {
         alert("Task cannot be empty.");
         return;
@@ -97,13 +126,13 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ oldTask, newTask })
+        body: JSON.stringify({ oldTask, newTask, newPriority })
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+           location.reload();
           alert("Task updated successfully");
-          location.reload();
         } else {
           alert("Failed to update task.");
         }

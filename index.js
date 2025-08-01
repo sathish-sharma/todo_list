@@ -10,16 +10,20 @@ app.use(express.static("public"));
 const MONGO_URI = "mongodb+srv://maruthisathish03:Mohana123@project1.v1qksi8.mongodb.net/?retryWrites=true&w=majority&appName=project1";
 
 const taskSchema = new mongoose.Schema({
-  task: String
+  task: String,
+  priority: {
+    type: String,
+    enum: ["Urgent", "High", "Low"],
+    default: "Low"
+  }
 });
-
 const Task = mongoose.model("Task", taskSchema);
 
 const sampleTasks = [
-  { task: "Create Some Videos" },
-  { task: "Learn DSA" },
-  { task: "Learn React" },
-  { task: "Take Some Risks" }
+  { task: "Create Some Videos", priority: "High" },
+  { task: "Learn DSA", priority: "Low" },
+  { task: "Learn React", priority: "Low" },
+  { task: "Take Some Risks", priority: "High" }
 ];
 
 mongoose.connect(MONGO_URI)
@@ -49,11 +53,11 @@ app.get("/", (req, res) => {
 
 
 app.post("/", async (req, res) => {
-  const ele1 = req.body.ele1.trim();
+  const {ele1,priority} = req.body;
   if (!ele1) 
     return res.status(400).json({ success: false, error: "Task cannot be empty" });
   try {
-    await Task.create({ task: ele1 });
+    await Task.create({ task: ele1, priority });
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -75,14 +79,15 @@ app.delete("/delete", async (req, res) => {
 });
 
 app.put("/edit", async (req, res) => {
-  const { oldTask, newTask } = req.body;
+  const { oldTask, newTask, newPriority } = req.body;
   const trimmedNew = newTask.trim();
+  
   if (!trimmedNew)
      return res.status(400).json({ success: false, error: "New task cannot be empty" });
   try {
     const result = await Task.findOneAndUpdate(
       { task: oldTask },
-      { task: trimmedNew }
+      { task: trimmedNew, priority: newPriority },
     );
     if (result) {
       res.status(200).json({ success: true });
