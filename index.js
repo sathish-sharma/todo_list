@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+const bodyParser = require("body-parser");
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -42,11 +43,11 @@ mongoose.connect(MONGO_URI)
     console.error("MongoDB connection error:", err);
   });
 
-
+let alertMessage = null;
 app.get("/", (req, res) => {
   Task.find()
     .then(tasks => {
-      res.render("list", { ejes: tasks }); 
+      res.render("list", { ejes: tasks, alert: alertMessage });
     })
     .catch(err => res.status(500).send("Error fetching tasks"));
 });
@@ -55,12 +56,14 @@ app.get("/", (req, res) => {
 app.post("/", async (req, res) => {
   const {ele1,priority} = req.body;
   if (!ele1) 
-    return res.status(400).json({ success: false, error: "Task cannot be empty" });
+    return res.status(400).json({ success: false, error: "Task cannot be empty" , alert: "empty"});
   try {
     await Task.create({ task: ele1, priority });
-    res.status(200).json({ success: true });
+    alertMessage = "added";
+    res.status(200).json({ success: true, alert: alertMessage });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+         alertMessage = "empty";
+        res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -69,7 +72,8 @@ app.delete("/delete", async (req, res) => {
   try {
     const result = await Task.deleteOne({ task: taskToDelete });
     if (result.deletedCount > 0) {
-      res.status(200).json({ success: true });
+      alertMessage = "deleted";
+      res.status(200).json({ success: true, alert: alertMessage });
     } else {
       res.status(404).json({ success: false, error: "Task not found" });
     }
@@ -83,16 +87,18 @@ app.put("/edit", async (req, res) => {
   const trimmedNew = newTask.trim();
   
   if (!trimmedNew)
-     return res.status(400).json({ success: false, error: "New task cannot be empty" });
+     return res.status(400).json({ success: false, error: "New task cannot be empty", alert: "empty" });
   try {
     const result = await Task.findOneAndUpdate(
       { task: oldTask },
       { task: trimmedNew, priority: newPriority },
     );
     if (result) {
-      res.status(200).json({ success: true });
+      alertMessage = "updated";
+      res.status(200).json({ success: true, alert: alertMessage });
     } else {
-      res.status(404).json({ success: false, error: "Task not found" });
+      alertMessage = "empty";
+      res.status(404).json({ success: false, error: "Task not found" , alert: alertMessage });
     }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

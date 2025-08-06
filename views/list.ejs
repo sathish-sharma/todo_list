@@ -9,6 +9,16 @@
 <body>
   <div id="heading" class="box">
     <h1>ToDoList</h1>
+     <% if (alert) { %>
+      <div class="alert <%= alert %>">
+        <%= alert === "added" ? "Task added successfully." : 
+            alert === "updated" ? "Task updated successfully." :
+            alert === "deleted" ? "Task deleted successfully." :
+            alert === "empty" ? "Task cannot be empty." : "" %>
+        <button onclick="this.parentElement.style.display='none'">X</button>
+      </div>
+    <% } %>
+  </div>
   </div>
 
   <div class="box">
@@ -56,7 +66,6 @@
       }).then(res => res.json())
       .then(data => {
         if (data.success) {
-          alert("Task added successfully");
           location.reload();
         } else {
           alert("Failed to add task");
@@ -73,7 +82,6 @@
         body: JSON.stringify({ task: task })
       }).then(res => {
         if (res.ok) {
-          alert("Task deleted successfully");
           location.reload();
         } else {
           alert("Failed to delete task");
@@ -132,7 +140,6 @@
       .then(data => {
         if (data.success) {
            location.reload();
-          alert("Task updated successfully");
         } else {
           alert("Failed to update task.");
         }
